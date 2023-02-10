@@ -1,0 +1,94 @@
+project_name: cloudflare-ddns
+
+builds:
+  - id: cloudflare-ddns
+    binary: cloudflare-ddns
+    main: .
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+      - -X main.short=cfddns
+      - -X main.name={{ .ProjectName }}
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .Commit }}
+      - -X main.date={{ .Date }}
+      - -X main.builtBy=goreleaser
+    targets:
+      - linux_amd64_v1 # Normal linux machine
+      - linux_arm64 # Raspberry Pi 4
+      - linux_arm_6 # Raspberry Pi 3
+      - linux_arm_7 # Raspberry Pi 3
+      - windows_amd64_v1 # Normal windows machine
+      - windows_arm64 # Normal windows machine
+      - darwin_amd64_v1 # Intell Macbook/iMac
+      - darwin_arm64 # M1/M2  Macbook/iMac
+
+archives:
+  - id: cloudflare-ddns
+    format: binary
+
+dockers:
+  - id: cloudflare-ddns-amd64
+    goos: linux
+    goarch: amd64
+    goamd64: v1
+    use: buildx
+    image_templates:
+      - "ghcr.io/kamontat/{{ .ProjectName }}:amd64"
+      - "ghcr.io/kamontat/{{ .ProjectName }}:{{ .Tag }}-amd64"
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.title=cloudflare-ddns"
+      - "--label=org.opencontainers.image.created={{ .Date }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.tag={{ .Tag }}"
+      - "--platform=linux/amd64"
+  - id: cloudflare-ddns-arm64
+    goos: linux
+    goarch: arm64
+    dockerfile: Dockerfile
+    use: buildx
+    image_templates:
+      - "ghcr.io/kamontat/{{ .ProjectName }}:arm64"
+      - "ghcr.io/kamontat/{{ .ProjectName }}:{{ .Tag }}-arm64"
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.title=cloudflare-ddns"
+      - "--label=org.opencontainers.image.created={{ .Date }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.tag={{ .Tag }}"
+      - "--platform=linux/arm64"
+
+docker_manifests:
+  - id: cloudflare-ddns-version
+    name_template: ghcr.io/kamontat/{{ .ProjectName }}:{{ .Tag }}
+    image_templates:
+      - ghcr.io/kamontat/{{ .ProjectName }}:{{ .Tag }}-amd64
+      - ghcr.io/kamontat/{{ .ProjectName }}:{{ .Tag }}-arm64
+  - id: cloudflare-ddns-latest
+    name_template: ghcr.io/kamontat/{{ .ProjectName }}:latest
+    image_templates:
+      - ghcr.io/kamontat/{{ .ProjectName }}:amd64
+      - ghcr.io/kamontat/{{ .ProjectName }}:arm64
+
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+  algorithm: sha256
+
+snapshot:
+  name_template: "{{ .Version }}-SNAPSHOT-{{ .ShortCommit }}"
+
+release:
+  draft: false
+  name_template: "{{ .Tag }}"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"

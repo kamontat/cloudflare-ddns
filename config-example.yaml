@@ -1,0 +1,11 @@
+ipv4: true # enabled ipv4 record (A)
+ipv6: true # enabled ipv6 record (AAAA)
+ttl: 5m # record ttl
+purge: false # purge other record in current zone
+subdomains:
+  - name: "@"
+    enabled: true
+    proxied: false
+  - name: "grafana"
+    enabled: true
+    proxied: false

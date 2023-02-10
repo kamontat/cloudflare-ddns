@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cloudflare-ddns
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: cloudflare-ddns
+              image: "TODO: github docker image"
+              command:
+                - /app/cloudflare-ddns
+              env:
+                - name: CONFIG_PATH
+                  value: "/etc/cloudflare-ddns/"
+              volumeMounts:
+                - mountPath: "/etc/cloudflare-ddns"
+                  name: config-cloudflare-ddns
+                  readOnly: true
+          volumes:
+            - name: config-cloudflare-ddns
+              secret:
+                secretName: config-cloudflare-ddns
