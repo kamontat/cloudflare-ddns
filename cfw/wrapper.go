@@ -116,6 +116,11 @@ func (w *Wrapper) upsertRecords(t models.IPType) {
 		return
 	}
 	w.logger.Debug("%s: %s", t.Name, ip)
+	if ip == nil {
+		// Skip disable record
+		w.logger.Info("disabled %s records, skipped", t.Name)
+		return
+	}
 
 	if !t.Check(ip) {
 		w.logger.Warnf("received ip(%s) is not %s", ip, t.Name)

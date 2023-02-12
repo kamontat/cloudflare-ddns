@@ -50,6 +50,9 @@ spec:
                 {{- toYaml .Values.resources | nindent 16 }}
               command:
                 - /app/cloudflare-ddns
+                {{- if .Values.additionArguments }}
+                {{- toYaml .Values.additionArguments | nindent 16 }}
+                {{- end }}
               env:
                 - name: CFDDNS_SECRETS__API_TOKEN
                   valueFrom:

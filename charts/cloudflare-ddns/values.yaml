@@ -11,6 +11,8 @@ image:
 scheduler: "*/10 * * * *"
 restartPolicy: "Never"
 
+additionArguments: []
+
 # config file content
 configSpec:
   settings:
