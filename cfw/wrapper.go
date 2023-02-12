@@ -87,6 +87,11 @@ func (w *Wrapper) DeleteRecord(t models.IPType, query models.SubDomain) error {
 }
 
 func (w *Wrapper) UpsertRecords() {
+	if len(w.Config.SubDomains) <= 0 {
+		w.logger.Errorf("cannot found subdomains to upsert")
+		return
+	}
+
 	var wg = sync.WaitGroup{}
 	wg.Add(2)
 
@@ -103,6 +108,7 @@ func (w *Wrapper) UpsertRecords() {
 }
 
 func (w *Wrapper) upsertRecords(t models.IPType) {
+
 	var setting = w.Config.Settings.GetIPSettings(t)
 	var ip, err = GetPublicIP(*setting)
 	if err != nil {

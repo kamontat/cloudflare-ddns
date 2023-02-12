@@ -39,29 +39,10 @@ settings:
       # key: ip
   ttl: ~ # record ttl in seconds
 
-subdomains:
-  - name: "@"
-    enabled: true
-    proxied: false
-  - name: "grafana"
-    enabled: true
-    proxied: false
-
-query:
-  ipv4:
-
-  ipv6:
-    ## text format
-    # url: https://ifconfig.me/ip
-    # format: text
-
-    ## json format
-    # url: https://www.trackip.net/ip?json
-    # format: json
-    # key: IP
-
-    ## key-value format
-    url: https://1.1.1.1/cdn-cgi/trace
-    format: kv
-    separator: "="
-    key: ip
+# subdomains:
+#   - name: "@"
+#     enabled: true
+#     proxied: false
+#   - name: "grafana"
+#     enabled: true
+#     proxied: false

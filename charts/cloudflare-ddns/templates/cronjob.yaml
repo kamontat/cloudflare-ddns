@@ -1,0 +1,72 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "charts.name" . }}
+  labels:
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.scheduler | quote }}
+  # https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#concurrency-policy
+  concurrencyPolicy: Replace
+
+  jobTemplate:
+    metadata:
+      {{- with .Values.jobAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "charts.selectorLabels" . | nindent 8 }}
+    spec:
+      template:
+        metadata:
+          {{- with .Values.podAnnotations }}
+          annotations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        spec:
+          restartPolicy: {{ .Values.restartPolicy | quote }}
+          securityContext:
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: {{ .Chart.Name }}
+              securityContext:
+                {{- toYaml .Values.securityContext | nindent 16 }}
+              image: "ghcr.io/kamontat/cloudflare-ddns:v0.0.2"
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}
+              command:
+                - /app/cloudflare-ddns
+              env:
+                - name: CFDDNS_SECRETS__API_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.secretSpec.apiToken.name }}
+                      key: {{ .Values.secretSpec.apiToken.key }}
+                - name: CFDDNS_SECRETS__ZONE_NAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.secretSpec.zoneName.name }}
+                      key: {{ .Values.secretSpec.zoneName.key }}
+              volumeMounts:
+                - mountPath: "/app/config.yaml"
+                  name: config
+                  readOnly: true
+          volumes:
+            - name: config
+              configMap:
+                name: {{ include "charts.name" . }}

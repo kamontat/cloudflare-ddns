@@ -1,0 +1,81 @@
+# Default values for charts.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: ghcr.io/kamontat/cloudflare-ddns
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+scheduler: "*/10 * * * *"
+restartPolicy: "Never"
+
+# config file content
+configSpec:
+  settings:
+    ipv4:
+      # enabled ipv4 record (A)
+      enabled: true
+      query:
+        url: https://1.1.1.1/cdn-cgi/trace
+        format: kv
+        separator: "="
+        key: ip
+    ipv6:
+       # enabled ipv6 record (AAAA)
+      enabled: true
+      query:
+        url: https://api64.ipify.org/?format=json
+        format: json
+        key: ip
+    ttl: ~ # record ttl in seconds
+  # subdomains:
+    # - name: "@"
+    #   enabled: true
+    #   proxied: false
+    # - name: "grafana"
+    #   enabled: true
+    #   proxied: false
+
+secretSpec:
+  apiToken: 
+    name: ""
+    key: ""
+  zoneName:
+    name: ""
+    key: ""
+
+nameOverride: ""
+
+jobAnnotations: {}
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
