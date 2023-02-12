@@ -26,7 +26,7 @@ func New(config *models.Config, log *logger.Logger) (w *Wrapper, err error) {
 
 	w = &Wrapper{
 		Config:   config,
-		ZoneId:   id,
+		Resource: cloudflare.ZoneIdentifier(id),
 		context:  ctx,
 		cancelFn: cancelFn,
 		api:      api,

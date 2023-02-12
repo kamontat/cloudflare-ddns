@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: cloudflare-ddns
 spec:
-  schedule: "* * * * *"
+  schedule: "*/10 * * * *"
   jobTemplate:
     spec:
       template:

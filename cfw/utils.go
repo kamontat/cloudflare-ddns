@@ -7,11 +7,61 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/kamontat/cloudflare-ddns/models"
 	"github.com/kc-workspace/go-lib/configs"
+	"github.com/kc-workspace/go-lib/logger"
 	"github.com/kc-workspace/go-lib/mapper"
+	"github.com/kc-workspace/go-lib/utils"
 )
+
+func GetPublicIP(config models.IPSettings) (*net.IP, error) {
+	if !config.Enabled {
+		return nil, nil
+	}
+
+	var result, err = query(config.Query)
+	if err != nil {
+		return nil, err
+	}
+
+	ip := net.ParseIP(result)
+	return &ip, nil
+}
+
+func GetFullDomain(name string, zone string) string {
+	if name == "" || name == "@" || name == "." {
+		return zone
+	}
+	return utils.JoinString(".", name, zone)
+}
+
+func GetTTL(input string, log *logger.Logger) (ttl int) {
+	var min = 30
+	var max = 86400
+
+	ttl = 1 // automatic ttl
+	if input != "" {
+		// 60 and 86400
+		duration, err := time.ParseDuration(input)
+		if err != nil {
+			log.Warnf("cannot parse ttl duration, fallback to 'automatic'")
+			return
+		}
+
+		ttl = int(duration.Seconds())
+		if ttl < min {
+			log.Warnf("minimum ttl is %d, force ttl to be %d", min, min)
+			ttl = min
+		} else if ttl > max {
+			log.Warnf("maximum ttl is %d, force ttl to be %d", max, max)
+			ttl = max
+		}
+	}
+
+	return
+}
 
 func query(query models.IPQuerySettings) (result string, err error) {
 	if query.Url == "" {
@@ -56,7 +106,7 @@ func convert(format string, body []byte, key, separator string) (result string, 
 		for _, line := range lines {
 			var k, v, ok = configs.ParseOverride(strings.Replace(line, separator, "=", 1))
 			if ok && key == k {
-				result = v
+				result = strings.TrimSpace(v)
 				return
 			}
 		}
@@ -67,34 +117,4 @@ func convert(format string, body []byte, key, separator string) (result string, 
 		err = fmt.Errorf("invalid format name '%s'", format)
 		return
 	}
-}
-
-func GetPublicIPV4(config models.IPSettings) (result string, err error) {
-	if !config.Enabled {
-		return
-	}
-	result, err = query(config.Query)
-	ip := net.ParseIP(result)
-	if ip.To4() == nil {
-		err = fmt.Errorf("query ip is not ipv4 (%s)", result)
-		result = ""
-		return
-	}
-
-	return
-}
-
-func GetPublicIPV6(config models.IPSettings) (result string, err error) {
-	if !config.Enabled {
-		return
-	}
-	result, err = query(config.Query)
-	ip := net.ParseIP(result)
-	if ip.To4() != nil {
-		err = fmt.Errorf("query ip is not ipv6 (%s)", result)
-		result = ""
-		return
-	}
-
-	return
 }

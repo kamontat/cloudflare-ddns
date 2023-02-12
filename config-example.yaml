@@ -37,8 +37,7 @@ settings:
       # format: kv
       # separator: "="
       # key: ip
-  ttl: 5m # record ttl
-  purge: false # purge other record in current zone
+  ttl: ~ # record ttl in seconds
 
 subdomains:
   - name: "@"

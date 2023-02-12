@@ -19,3 +19,14 @@ type Settings struct {
 	Ttl   string
 	Purge bool
 }
+
+func (s Settings) GetIPSettings(t IPType) *IPSettings {
+	switch t.Name {
+	case IPV4.Name:
+		return &s.Ipv4
+	case IPV6.Name:
+		return &s.Ipv6
+	default:
+		return nil
+	}
+}

@@ -54,7 +54,7 @@ Update cloudflare record
 					return err
 				}
 
-				wrapper.UpdateRecords()
+				wrapper.UpsertRecords()
 				return nil
 			},
 		}).Start(os.Args)
