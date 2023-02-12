@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"net/http"
 	"strings"
 	"time"
 
@@ -73,7 +72,7 @@ func query(query models.IPQuerySettings) (result string, err error) {
 		return
 	}
 
-	req, err := http.Get(query.Url)
+	req, err := DefaultClient.Get(query.Url)
 	if err != nil {
 		return
 	}

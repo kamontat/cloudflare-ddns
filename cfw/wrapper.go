@@ -108,7 +108,6 @@ func (w *Wrapper) UpsertRecords() {
 }
 
 func (w *Wrapper) upsertRecords(t models.IPType) {
-
 	var setting = w.Config.Settings.GetIPSettings(t)
 	var ip, err = GetPublicIP(*setting)
 	if err != nil {
