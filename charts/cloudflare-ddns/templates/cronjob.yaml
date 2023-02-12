@@ -44,7 +44,6 @@ spec:
             - name: {{ .Chart.Name }}
               securityContext:
                 {{- toYaml .Values.securityContext | nindent 16 }}
-              image: "ghcr.io/kamontat/cloudflare-ddns:v0.0.2"
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
               imagePullPolicy: {{ .Values.image.pullPolicy }}
               resources:
