@@ -62,10 +62,13 @@ spec:
                       name: {{ .Values.secretSpec.zoneName.name }}
                       key: {{ .Values.secretSpec.zoneName.key }}
               volumeMounts:
-                - mountPath: "/app/config.yaml"
+                - mountPath: "/app"
                   name: config
                   readOnly: true
           volumes:
             - name: config
               configMap:
                 name: {{ include "charts.name" . }}
+                items:
+                  - key: config.yaml
+                    path: config.yaml

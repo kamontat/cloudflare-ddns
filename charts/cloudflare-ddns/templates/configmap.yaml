@@ -5,4 +5,5 @@ metadata:
   labels:
     {{- include "charts.labels" . | nindent 4 }}
 data:
-  {{- toYaml .Values.configSpec | nindent 2 }}
+  config.yaml: |
+    {{- toYaml .Values.configSpec | nindent 4 }}
