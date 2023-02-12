@@ -37,7 +37,7 @@ Update cloudflare record
 		Plugin(plugins.SupportHelp()).
 		Plugin(plugins.SupportVersion()).
 		Plugin(plugins.SupportLogLevel(logger.INFO)).
-		Plugin(plugins.SupportConfig([]string{"{{.current}}/config.yaml"})).
+		Plugin(plugins.SupportConfig([]string{"{{.current}}/configs"})).
 		Plugin(plugins.SupportDotEnv(false)).
 		Plugin(plugins.SupportVar()).
 		Command(&commands.Command{

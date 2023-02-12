@@ -62,7 +62,7 @@ spec:
                       name: {{ .Values.secretSpec.zoneName.name }}
                       key: {{ .Values.secretSpec.zoneName.key }}
               volumeMounts:
-                - mountPath: "/app"
+                - mountPath: "/app/configs"
                   name: config
                   readOnly: true
           volumes:
