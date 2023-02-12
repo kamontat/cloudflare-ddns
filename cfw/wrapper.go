@@ -96,12 +96,14 @@ func (w *Wrapper) UpsertRecords() {
 	wg.Add(2)
 
 	go func() {
+		defer wg.Done()
+
 		w.upsertRecords(models.IPV4)
-		wg.Done()
 	}()
 	go func() {
+		defer wg.Done()
+
 		w.upsertRecords(models.IPV6)
-		wg.Done()
 	}()
 
 	wg.Wait()
@@ -151,21 +153,25 @@ func (w *Wrapper) upsertRecords(t models.IPType) {
 		// override name with correct full domain name
 		query.Name = name
 
-		var err error
 		if isUpdate && !subdomain.Enabled {
-			err = w.DeleteRecord(t, query)
+			var err = w.DeleteRecord(t, query)
+			if err != nil {
+				w.logger.Errorf("delete record '%s' failed because %v", query.Name, err)
+			}
 		} else if isUpdate && subdomain.Enabled {
 			if record.Content != query.IP {
-				err = w.UpdateRecord(t, query)
+				var err = w.UpdateRecord(t, query)
+				if err != nil {
+					w.logger.Errorf("update record '%s' failed because %v", query.Name, err)
+				}
 			} else {
-				w.logger.Warnf("skip updating record '%s' because same content", query.Name)
+				w.logger.Warnf("skipped record '%s' because same content", query.Name)
 			}
 		} else if !isUpdate && subdomain.Enabled {
-			err = w.CreateRecord(t, query)
-		}
-
-		if err != nil {
-			w.logger.Errorf("cannot upsert record '%s': %v", query.Name, err)
+			var err = w.CreateRecord(t, query)
+			if err != nil {
+				w.logger.Errorf("create record '%s' failed because %v", query.Name, err)
+			}
 		}
 	}
 }
