@@ -159,7 +159,7 @@ func (w *Wrapper) upsertRecords(t models.IPType) {
 				w.logger.Errorf("delete record '%s' failed because %v", query.Name, err)
 			}
 		} else if isUpdate && subdomain.Enabled {
-			if record.Content != query.IP {
+			if IsChange(record, query, w.logger) {
 				var err = w.UpdateRecord(t, query)
 				if err != nil {
 					w.logger.Errorf("update record '%s' failed because %v", query.Name, err)

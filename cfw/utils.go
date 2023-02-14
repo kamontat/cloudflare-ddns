@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cloudflare/cloudflare-go"
 	"github.com/kamontat/cloudflare-ddns/models"
 	"github.com/kc-workspace/go-lib/configs"
 	"github.com/kc-workspace/go-lib/logger"
@@ -60,6 +61,12 @@ func GetTTL(input string, log *logger.Logger) (ttl int) {
 	}
 
 	return
+}
+
+func IsChange(record cloudflare.DNSRecord, query models.SubDomain, log *logger.Logger) bool {
+	return record.Content != query.IP ||
+		*record.Proxied != query.Proxied ||
+		record.TTL != GetTTL(query.TTL, log.Extend("utils"))
 }
 
 func query(query models.IPQuerySettings) (result string, err error) {
