@@ -1,8 +1,6 @@
 entities:
   - name: "@"
     enabled: false
-  - name: "grafana"
-    mode-key: ipv4
 
 settings:
   ## Default entity properties.
