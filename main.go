@@ -48,6 +48,7 @@ Update cloudflare record
 					return err
 				}
 
+				defer c.Close()
 				return c.Start()
 			},
 		}).Start(os.Args)

@@ -66,3 +66,7 @@ func (c *Core) Start() error {
 
 	return nil
 }
+
+func (c *Core) Close() {
+	c.cloudflare.Close()
+}
