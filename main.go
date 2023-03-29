@@ -3,8 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/kamontat/cloudflare-ddns/cfw"
-	"github.com/kamontat/cloudflare-ddns/models"
+	"github.com/kamontat/cloudflare-ddns/core"
 	"github.com/kc-workspace/go-lib/commandline"
 	"github.com/kc-workspace/go-lib/commandline/commands"
 	m "github.com/kc-workspace/go-lib/commandline/models"
@@ -44,18 +43,12 @@ Update cloudflare record
 			Name:    commands.DEFAULT,
 			Aliases: []string{"update"},
 			Executor: func(p *commands.ExecutorParameter) error {
-				var config, err = models.NewConfig(p.Config)
+				c, err := core.New(p)
 				if err != nil {
 					return err
 				}
 
-				wrapper, err := cfw.New(config, p.Logger.New())
-				if err != nil {
-					return err
-				}
-
-				wrapper.UpsertRecords()
-				return nil
+				return c.Start()
 			},
 		}).Start(os.Args)
 
