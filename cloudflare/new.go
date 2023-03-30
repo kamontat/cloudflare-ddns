@@ -6,9 +6,11 @@ import (
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/kamontat/cloudflare-ddns/clients"
 	"github.com/kamontat/cloudflare-ddns/configs"
+	"github.com/kc-workspace/go-lib/caches"
+	"github.com/kc-workspace/go-lib/logger"
 )
 
-func New(secret configs.Secret) (*Cloudflare, error) {
+func New(secret configs.Secret, log *logger.Logger) (*Cloudflare, error) {
 	var context, cancelFn = context.WithCancel(context.Background())
 	api, err := cloudflare.NewWithAPIToken(
 		secret.GetApiToken(),
@@ -54,5 +56,6 @@ func New(secret configs.Secret) (*Cloudflare, error) {
 		api:               api,
 		context:           context,
 		cancelFn:          cancelFn,
+		cache:             caches.New(log),
 	}, nil
 }

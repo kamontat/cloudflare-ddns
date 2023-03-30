@@ -12,7 +12,7 @@ func New(p *commands.ExecutorParameter) (core *Core, err error) {
 		return
 	}
 
-	cf, err := cloudflare.New(config.Secrets)
+	cf, err := cloudflare.New(config.Secrets, p.Logger.Extend("cloudflare"))
 	if err != nil {
 		return
 	}

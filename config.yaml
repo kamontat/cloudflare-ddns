@@ -65,6 +65,8 @@ settings:
     key: ip
   ## Tunnel settings
   tunnel:
+    ## Enabled ingress service
+    ingress: true
     ## tunnel catchall service
     catchall-service: 'http_status:404'
 

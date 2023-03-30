@@ -7,6 +7,7 @@ import (
 
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/kamontat/cloudflare-ddns/utils"
+	"github.com/kc-workspace/go-lib/caches"
 )
 
 type Cloudflare struct {
@@ -17,6 +18,7 @@ type Cloudflare struct {
 	api               *cloudflare.API
 	context           context.Context
 	cancelFn          context.CancelFunc
+	cache             *caches.Service
 }
 
 func (c *Cloudflare) ListDNSRecords() (
@@ -71,6 +73,13 @@ func (c *Cloudflare) ListTunnelRecords() (records []TunnelRecord, err error) {
 }
 
 func (c *Cloudflare) GetTunnelRecord(name string) (*TunnelRecord, error) {
+	var cacheKey = fmt.Sprintf("cloudflare.tunnel.record.%s", name)
+	if c.cache.Has(cacheKey) {
+		var cacheData = c.cache.Get(cacheKey)
+		var raw, err = cacheData.Get()
+		return raw.(*TunnelRecord), err
+	}
+
 	var tunnels, _, err = c.api.ListTunnels(
 		c.context,
 		c.AccountIdentifier,
@@ -90,6 +99,7 @@ func (c *Cloudflare) GetTunnelRecord(name string) (*TunnelRecord, error) {
 	}
 
 	var record = ToTunnelRecord(tunnels[0])
+	c.cache.Set(cacheKey, &record, "15m")
 	return &record, nil
 }
 
@@ -97,7 +107,7 @@ func (c *Cloudflare) UpdateTunnelConfig(config *TunnelConfig) (err error) {
 	var ingresses = make([]cloudflare.UnvalidatedIngressRule, 0)
 	for _, ingress := range config.Ingresses {
 		ingresses = append(ingresses, cloudflare.UnvalidatedIngressRule{
-			Hostname: ingress.Host,
+			Hostname: utils.BuildRecordName(ingress.Name, c.ZoneName),
 			Path:     ingress.Path,
 			Service:  ingress.Service,
 		})

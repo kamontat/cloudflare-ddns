@@ -10,8 +10,10 @@ import (
 )
 
 type Tunnel struct {
-	TunnelName   string
-	TunnelDomain string
+	Name    string
+	Domain  string
+	Path    string
+	Service string
 }
 
 type Entity struct {
@@ -21,7 +23,7 @@ type Entity struct {
 	Proxied bool
 	TTL     int
 	Query   *configs.Query
-	Tunnel
+	Tunnel  *Tunnel
 }
 
 func (e *Entity) GetType() cloudflare.DNSRecordType {
@@ -42,12 +44,12 @@ func (e *Entity) GetContent(cf *cloudflare.Cloudflare) (string, error) {
 	case configs.IPV4ModeKey, configs.IPV6ModeKey:
 		return e.Query.Query()
 	case configs.TunnelModeKey:
-		tunnel, err := cf.GetTunnelRecord(e.TunnelName)
+		tunnel, err := cf.GetTunnelRecord(e.Tunnel.Name)
 		if err != nil {
 			return "", err
 		}
 
-		return tunnel.GetURL(e.TunnelDomain), nil
+		return tunnel.GetURL(e.Tunnel.Domain), nil
 	default:
 		return "", fmt.Errorf("cannot found mode-key to resolve content")
 	}
@@ -59,9 +61,6 @@ func (e *Entity) GetTTL() int {
 
 // Compare entity with record.
 func (e *Entity) Compare(record *cloudflare.DNSRecord, cf *cloudflare.Cloudflare) (*cloudflare.DNSRecord, error) {
-	if !e.Enabled {
-		return nil, nil
-	}
 	var rec = cloudflare.DNSRecord{}
 	if record != nil {
 		rec = *record
@@ -109,8 +108,10 @@ func ToEntities(config configs.Entity, def *configs.DefaultEntity, setting confi
 		return
 	}
 
-	var tunnel = &Tunnel{}
+	var tunnel *Tunnel
 	if modeKey == configs.TunnelModeKey {
+		tunnel = &Tunnel{}
+
 		var name string
 		name, err = utils.GetOr("entity.tunnel-name", config.TunnelName, base.TunnelName, "")
 		if err != nil {
@@ -120,14 +121,20 @@ func ToEntities(config configs.Entity, def *configs.DefaultEntity, setting confi
 			err = fmt.Errorf("tunnel name must be defined if your mode-key is tunnel")
 			return
 		}
-		tunnel.TunnelName = name
+		tunnel.Name = name
 
 		var domain string
 		domain, err = utils.GetOr("entity.tunnel-domain", config.TunnelDomain, base.TunnelDomain, "")
 		if err != nil {
 			return
 		}
-		tunnel.TunnelDomain = domain
+		tunnel.Domain = domain
+
+		path, _ := utils.GetOr("entity.tunnel-path", config.TunnelPath, base.TunnelPath, "")
+		tunnel.Path = path
+
+		service, _ := utils.GetOr("entity.tunnel-service", config.TunnelService, base.TunnelService, "")
+		tunnel.Service = service
 	}
 
 	var query *configs.Query = nil
@@ -160,7 +167,7 @@ func ToEntities(config configs.Entity, def *configs.DefaultEntity, setting confi
 			Proxied: proxied,
 			TTL:     int(dur.Seconds()),
 			Query:   setting.Ipv4,
-			Tunnel:  *tunnel,
+			Tunnel:  tunnel,
 		}, {
 			Name:    name,
 			ModeKey: configs.IPV6ModeKey,
@@ -168,7 +175,7 @@ func ToEntities(config configs.Entity, def *configs.DefaultEntity, setting confi
 			Proxied: proxied,
 			TTL:     int(dur.Seconds()),
 			Query:   setting.Ipv6,
-			Tunnel:  *tunnel,
+			Tunnel:  tunnel,
 		}}
 	} else {
 		entities = []*Entity{{
@@ -178,7 +185,7 @@ func ToEntities(config configs.Entity, def *configs.DefaultEntity, setting confi
 			Proxied: proxied,
 			TTL:     int(dur.Seconds()),
 			Query:   query,
-			Tunnel:  *tunnel,
+			Tunnel:  tunnel,
 		}}
 	}
 
