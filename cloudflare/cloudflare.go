@@ -93,6 +93,36 @@ func (c *Cloudflare) GetTunnelRecord(name string) (*TunnelRecord, error) {
 	return &record, nil
 }
 
+func (c *Cloudflare) UpdateTunnelConfig(config *TunnelConfig) (err error) {
+	var ingresses = make([]cloudflare.UnvalidatedIngressRule, 0)
+	for _, ingress := range config.Ingresses {
+		ingresses = append(ingresses, cloudflare.UnvalidatedIngressRule{
+			Hostname: ingress.Host,
+			Path:     ingress.Path,
+			Service:  ingress.Service,
+		})
+	}
+
+	// Add catch-all
+	ingresses = append(ingresses, cloudflare.UnvalidatedIngressRule{
+		Service: config.CatchallService,
+	})
+
+	var params = cloudflare.TunnelConfigurationParams{
+		TunnelID: config.Record.Id,
+		Config: cloudflare.TunnelConfiguration{
+			Ingress: ingresses,
+		},
+	}
+
+	_, err = c.api.UpdateTunnelConfiguration(
+		c.context,
+		c.AccountIdentifier,
+		params,
+	)
+	return
+}
+
 func (c *Cloudflare) UpsertDNSRecord(record *DNSRecord) error {
 	if record.Id == "" {
 		return c.InsertDNSRecord(record)
