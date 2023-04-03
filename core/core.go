@@ -92,6 +92,7 @@ func (c *Core) Start() error {
 	if c.config.Settings.GetTunnelIngress() {
 		var tunnelConfigs = models.ToTunnelConfigs(ingresses, c.config.Settings)
 		for _, config := range tunnelConfigs {
+			c.logger.Info("updating tunnel: %s (size=%d)", config.Record.Name, len(config.Ingresses))
 			if err = c.cloudflare.UpdateTunnelConfig(config); err != nil {
 				c.logger.Error(err)
 			}

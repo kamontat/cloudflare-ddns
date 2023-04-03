@@ -3,6 +3,7 @@ package cloudflare
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/cloudflare/cloudflare-go"
@@ -104,32 +105,45 @@ func (c *Cloudflare) GetTunnelRecord(name string) (*TunnelRecord, error) {
 }
 
 func (c *Cloudflare) UpdateTunnelConfig(config *TunnelConfig) (err error) {
-	var ingresses = make([]cloudflare.UnvalidatedIngressRule, 0)
+	var ingresses = make([]TunnelConfigurationIngress, 0)
 	for _, ingress := range config.Ingresses {
-		ingresses = append(ingresses, cloudflare.UnvalidatedIngressRule{
-			Hostname: utils.BuildRecordName(ingress.Name, c.ZoneName),
+		var hostname = utils.BuildRecordName(ingress.Name, c.ZoneName)
+		ingresses = append(ingresses, TunnelConfigurationIngress{
+			Hostname: hostname,
 			Path:     ingress.Path,
 			Service:  ingress.Service,
+			OriginRequest: &cloudflare.OriginRequestConfig{
+				HTTPHostHeader: &hostname,
+			},
 		})
 	}
 
 	// Add catch-all
-	ingresses = append(ingresses, cloudflare.UnvalidatedIngressRule{
+	ingresses = append(ingresses, TunnelConfigurationIngress{
 		Service: config.CatchallService,
 	})
 
-	var params = cloudflare.TunnelConfigurationParams{
+	var params = TunnelConfigurationParams{
 		TunnelID: config.Record.Id,
-		Config: cloudflare.TunnelConfiguration{
-			Ingress: ingresses,
+		Config: TunnelConfiguration{
+			Ingress:       ingresses,
+			OriginRequest: buildOriginConfig(c.ZoneName),
 		},
 	}
 
-	_, err = c.api.UpdateTunnelConfiguration(
-		c.context,
-		c.AccountIdentifier,
-		params,
+	endpoint := fmt.Sprintf(
+		"/accounts/%s/cfd_tunnel/%s/configurations",
+		c.AccountIdentifier.Identifier,
+		params.TunnelID,
 	)
+	_, err = c.api.Raw(
+		c.context,
+		http.MethodPut,
+		endpoint,
+		params,
+		nil,
+	)
+
 	return
 }
 

@@ -20,6 +20,12 @@ settings:
     ## required if mode-key is 'tunnel'
     ## tunnel domain
     tunnel-domain: 'cfargotunnel.com'
+    ## required if mode-key is 'tunnel'
+    ## tunnel ingress path
+    tunnel-path: ''
+    ## required if mode-key is 'tunnel'
+    ## tunnel ingress service
+    tunnel-service: ''
     ## enabled all entities by default.
     ## if not set, default is false
     enabled: true
@@ -59,6 +65,12 @@ settings:
     url: https://api64.ipify.org/?format=json
     format: json
     key: ip
+  ## Tunnel settings
+  tunnel:
+    ## Enabled ingress service
+    ingress: true
+    ## tunnel catchall service
+    catchall-service: 'http_status:404'
 
 secrets:
   ## Require permission
