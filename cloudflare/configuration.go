@@ -10,7 +10,7 @@ func get[T any](i T) *T {
 	return &i
 }
 
-func buildOriginConfig(zone string) cloudflare.OriginRequestConfig {
+func buildOriginConfig() cloudflare.OriginRequestConfig {
 	return cloudflare.OriginRequestConfig{
 		ConnectTimeout:       get(15 * time.Second),
 		TLSTimeout:           get(15 * time.Second),

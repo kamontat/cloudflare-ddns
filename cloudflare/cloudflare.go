@@ -113,6 +113,7 @@ func (c *Cloudflare) UpdateTunnelConfig(config *TunnelConfig) (err error) {
 			Path:     ingress.Path,
 			Service:  ingress.Service,
 			OriginRequest: &cloudflare.OriginRequestConfig{
+				HTTPHostHeader:   get(hostname),
 				OriginServerName: get(hostname),
 			},
 		})
@@ -127,7 +128,7 @@ func (c *Cloudflare) UpdateTunnelConfig(config *TunnelConfig) (err error) {
 		TunnelID: config.Record.Id,
 		Config: TunnelConfiguration{
 			Ingress:       ingresses,
-			OriginRequest: buildOriginConfig(c.ZoneName),
+			OriginRequest: buildOriginConfig(),
 		},
 	}
 
