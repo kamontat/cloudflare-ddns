@@ -104,6 +104,39 @@ func (c *Cloudflare) GetTunnelRecord(name string) (*TunnelRecord, error) {
 	return &record, nil
 }
 
+func (c *Cloudflare) GetTunnelConfig(rec *TunnelRecord) (config *TunnelConfig, err error) {
+	raw, err := c.api.GetTunnelConfiguration(
+		c.context,
+		c.AccountIdentifier,
+		rec.Id,
+	)
+
+	if err != nil {
+		return
+	}
+
+	config = new(TunnelConfig)
+	config.Record = rec
+	config.Ingresses = make([]*TunnelConfigIngress, 0)
+
+	for _, ingress := range raw.Config.Ingress {
+		if ingress.Service != "" &&
+			ingress.Hostname == "" {
+			// Catchall service always be on the end of list
+			config.CatchallService = ingress.Service
+			break
+		}
+
+		config.Ingresses = append(config.Ingresses, &TunnelConfigIngress{
+			Name:    utils.BuildEntityName(ingress.Hostname, c.ZoneName),
+			Path:    ingress.Path,
+			Service: ingress.Service,
+		})
+	}
+
+	return
+}
+
 func (c *Cloudflare) UpdateTunnelConfig(config *TunnelConfig) (err error) {
 	var ingresses = make([]TunnelConfigurationIngress, 0)
 	for _, ingress := range config.Ingresses {
