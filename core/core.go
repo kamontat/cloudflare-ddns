@@ -23,7 +23,9 @@ func (c *Core) Start() error {
 
 	var ingresses = make([]*models.TunnelIngress, 0)
 
-	c.logger.Debug("listed dns-records size: %d", len(records))
+	c.logger.Debug("server records size: %d", len(records))
+	c.logger.Debug("config entities size: %d", len(c.config.Entities))
+
 	for _, raw := range c.config.Entities {
 		var entities, err = models.ToEntities(
 			raw,
