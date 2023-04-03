@@ -10,6 +10,10 @@ func get[T any](i T) *T {
 	return &i
 }
 
+func buildOriginServerName(zone string) *string {
+	return get("*." + zone)
+}
+
 func buildOriginConfig(zone string) cloudflare.OriginRequestConfig {
 	return cloudflare.OriginRequestConfig{
 		ConnectTimeout:       get(10 * time.Second),
@@ -17,7 +21,5 @@ func buildOriginConfig(zone string) cloudflare.OriginRequestConfig {
 		TCPKeepAlive:         get(30 * time.Second),
 		KeepAliveConnections: get(30),
 		KeepAliveTimeout:     get(2 * time.Minute),
-		OriginServerName:     get("*." + zone),
-		NoTLSVerify:          get(true),
 	}
 }

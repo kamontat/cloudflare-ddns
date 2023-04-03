@@ -114,6 +114,8 @@ func (c *Cloudflare) UpdateTunnelConfig(config *TunnelConfig) (err error) {
 			Service:  ingress.Service,
 			OriginRequest: &cloudflare.OriginRequestConfig{
 				HTTPHostHeader: &hostname,
+				// OriginServerName: buildOriginServerName(c.ZoneName),
+				// NoTLSVerify:      get(true),
 			},
 		})
 	}
